@@ -58,7 +58,11 @@ function main() {
     }
     
     //POINTS
-    function makeInstance(geometry, position) {
+    function makeSphere(position) {
+        const radius = 7;
+        const widthSegments = 12;
+        const heightSegments = 8;
+        const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
         const color = 0x49ef4;
         const material = new THREE.MeshPhongMaterial({color});
 
@@ -71,16 +75,18 @@ function main() {
 
         return sphere;
     }
-
-    const radius = 7;
-    const widthSegments = 12;
-    const heightSegments = 8;
-    const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
-    const color = 0x49ef4;
-    const material2 = new THREE.MeshPhongMaterial({color});
-    console.log('purple?')
-    const ball = new THREE.Mesh(geometry, material2);
-    scene.add(ball);
+    const pos = {x:0,y:0,z:0};
+    makeSphere(pos);
+    
+    // const radius = 7;
+    // const widthSegments = 12;
+    // const heightSegments = 8;
+    // const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+    // const color = 0x49ef4;
+    // const material2 = new THREE.MeshPhongMaterial({color});
+    // console.log('purple?')
+    // const ball = new THREE.Mesh(geometry, material2);
+    // scene.add(ball);
 
     
     //TODO: for each point in curvePoints create a sphere
