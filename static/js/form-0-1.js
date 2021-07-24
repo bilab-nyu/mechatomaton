@@ -1,11 +1,15 @@
+let form0;
+let form1;
+
 function loadPoints(fileName) {
+    console.log(fileName)
     var table = loadTable(fileName, 'csv');
     const curvePoints = {};
     const curveKey = 0;
     const xCoord = -1;
 
     //read CSV file and store to 2D array or something
-    // console.log(table.getRowCount());
+    console.log(table.getRowCount());
 
     //each row
     //if xCoord changed, add a new curveKey with empty array of points
@@ -16,15 +20,16 @@ function loadPoints(fileName) {
     return curvePoints;
 }
 
-function setup(){
-    var form0CurvePoints = loadPoints('static/forms/form_0.csv');
-    var form1CurvePoints = loadPoints('static/forms/form_1.csv');
+function preload(){
+    //load points from CSV files
+    form0 = loadTable('static/forms/form_0.csv');
+    form1 = loadTable('static/forms/form_1.csv');
 }
 
+function setup(){
+    console.log(form0.getRowCount());
+}
 function main() {
-    
-    //load points from CSV files
-    
 
     //RENDERER
     const canvas = document.querySelector('#c'); //make sure canvas is defined before this script
