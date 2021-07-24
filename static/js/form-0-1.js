@@ -2,12 +2,22 @@ let form0;
 let form1;
 
 let form0CurvePoints;
+let f1;
 let form1CurvePoints;
+let f2;
+let formCurvePoints;
+
+let timeFraction=0;
+
+let printOnce = true;
+let p = 0;
+
+
 
 function loadPoints(table){
     let formPoints =  [];
-    let curve = {id:0,points:[]};
-    let curvePoint = {x:0,y:0,z:0};
+    // let curve = {id:0,points:[]};
+    // let curvePoint = {x:0,y:0,z:0};
     let curveKey = -1;
     let xCoord = -1;
 
@@ -16,23 +26,20 @@ function loadPoints(table){
     //each row
     for(let i = 0; i<table.getRowCount();i++){
         let row = table.getRow(i);
-
-        curvePoint.x = row.get(0);
-        curvePoint.y = row.get(1);
-        curvePoint.z = row.get(2);
         
         //if xCoord changed, add a new curveKey and empty array of points
-        if(xCoord != curvePoint.x)
+        if(xCoord != row.get(0))
         {
-            curveKey++;
-            curve.id = curveKey;
-            curve.points = [];
-            xCoord = curvePoint.x;
+            
+            curveKey = curveKey+1;
+            let curve = {id:curveKey,points:[]};
+            xCoord = row.get(0);
             formPoints.push(curve);
+            // console.log(formPoints[curveKey]);
         }
 
         //append latest point to formPoints at the latest curveKey
-        formPoints[curveKey].points.push(curvePoint);
+        formPoints[curveKey].points.push({x:1*row.get(0),y:1*row.get(2),z:-1*row.get(1)});
 
     }
     
@@ -45,14 +52,8 @@ function preload(){
     form1 = loadTable('static/forms/form_1.csv');
 }
 
-function setup(){
-    // console.log(form0.getRowCount());
-    form0CurvePoints = loadPoints(form0);
-    console.log(form0CurvePoints);
-    form1CurvePoints = loadPoints(form1);
-    console.log(form1CurvePoints);
-}
 function main() {
+    
 
     //RENDERER
     const canvas = document.querySelector('#c'); //make sure canvas is defined before this script
@@ -68,10 +69,14 @@ function main() {
     //CAMERA
     const fov = 40;
     const aspect = 2;  // the canvas default
-    const near = 0.1;
-    const far = 1000;
+    const near = 1;
+    const far = 10000;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    camera.position.z = 40;
+    // camera.position.x = 3282;
+    // camera.position.y = 2530;
+    // camera.position.z = 1125;
+    camera.position.set(3808, 2007, 1048);
+    camera.lookAt(1053,-2,-660);
 
     //SCENE
     const scene = new THREE.Scene();
@@ -87,7 +92,7 @@ function main() {
     
     //POINTS
     function makeSphere(position) {
-        const radius = 7;
+        const radius = 4;
         const widthSegments = 12;
         const heightSegments = 8;
         const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
@@ -103,8 +108,8 @@ function main() {
 
         return sphere;
     }
-    const pos = {x:0,y:0,z:0};
-    makeSphere(pos);
+    // const pos = {x:0,y:0,z:0};
+    // makeSphere(pos);
     
     // const radius = 7;
     // const widthSegments = 12;
@@ -117,8 +122,18 @@ function main() {
     // scene.add(ball);
 
     
-    //TODO: for each point in curvePoints create a sphere
+    //TODO: for each point in formPoints create a sphere
     const spheres = [];
+    // console.log(form0CurvePoints[0]);
+    form0CurvePoints.forEach(function(curve, index, array) {
+        
+        curve.points.forEach(function(coord, index, array) {
+            // console.log(coord);
+            spheres.push(makeSphere(coord));
+            // makeSphere(coord);
+        });
+    });
+
 
 
     //canvas' "external resolution" / size on the webpage is set by CSS
@@ -136,8 +151,16 @@ function main() {
     }
     
     //RENDER LOOP
+    const animationLoopTime = 5*72;
+
     function render(time) {
         time *= 0.001;  // convert time to seconds
+        // console.log(time)
+        timeFraction = time/animationLoopTime;
+        if(timeFraction > 1){
+            timeFraction = 1;
+        }
+        // console.log(timeFraction)
 
         // check if renderer resolution needs to change based on canvas/window size
         if (resizeRendererToDisplaySize(renderer)) {
@@ -152,6 +175,72 @@ function main() {
         
 
         //TODO: interpolate between curves
+        
+        // console.log(timeFraction)
+        formCurvePoints.forEach(function(curve, j, array) {
+            let f1 = form0CurvePoints[j].points;
+            let f2 = form1CurvePoints[j].points;
+            // if(printOnce)
+            // {
+            //     console.log(f2);
+                
+            //     p++;
+            //     if(p>2)
+            //     {
+            //         printOnce = false;
+            //     }
+            // }
+            
+            curve.points.forEach(function(coord, k, array) {
+                sphereIndex = f1.length * j + k;
+                // console.log(timeFraction);
+                // if(timeFraction>=1){
+                //     print("Done!");
+                // }
+                coord.x = 1*f1[k].x + timeFraction*(f2[k].x-f1[k].x);
+                coord.y = 1*f1[k].y + timeFraction*(f2[k].y-f1[k].y);
+                coord.z = 1*f1[k].z + timeFraction*(f2[k].z-f1[k].z);
+                // if(i == 0 & j == 0){
+                //     print(`${b[j].z-a[j].z}`);
+                // }
+                // if(printOnce){
+                //     if(coord.z >= f2[k].z){
+                //         // print(time);
+                //         printOnce = false;
+                //     }
+                // }
+                
+                spheres[sphereIndex].position.x = coord.x;
+                spheres[sphereIndex].position.y = coord.y;
+                spheres[sphereIndex].position.z = coord.z;
+            });
+
+        });
+
+        // for(let i = 0; i<formCurvePoints.length; i++){
+        //     let f1 = form0CurvePoints[i].points;
+
+        //     let f2 = form1CurvePoints[i].points;
+        //     for(let j = 0; j<f1.length; j++){
+        //         sphereIndex = f1.length * i + j;
+        //         // console.log(timeFraction);
+        //         // if(timeFraction>=1){
+        //         //     print("Done!");
+        //         // }
+        //         coord = form0CurvePoints[i].points[j];
+        //         coord.x = 1*f1[j].x + timeFraction*(f2[j].x-f1[j].x);
+        //         coord.y = 1*f1[j].y + timeFraction*(f2[j].y-f1[j].y);
+        //         coord.z = 1*f1[j].z + timeFraction*(f2[j].z-f1[j].z);
+        //         // if(i == 0 & j == 0){
+        //         //     print(`${b[j].z-a[j].z}`);
+        //         // }
+                
+        //         spheres[sphereIndex].position.x = coord.x;
+        //         spheres[sphereIndex].position.y = coord.y;
+        //         spheres[sphereIndex].position.z = coord.z;
+
+        //     }
+        // }
 
         //TODO: set sphere positions based on interpolations
 
@@ -163,4 +252,14 @@ function main() {
     requestAnimationFrame(render);
 }
 
-main();
+function setup(){
+    form0CurvePoints = loadPoints(form0);
+    console.log(form0CurvePoints);
+    form1CurvePoints = loadPoints(form1);
+    console.log(form1CurvePoints);
+    formCurvePoints = form0CurvePoints;
+
+    main();
+}
+
+
