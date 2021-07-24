@@ -1,23 +1,42 @@
 let form0;
 let form1;
 
-function loadPoints(fileName) {
-    console.log(fileName)
-    var table = loadTable(fileName, 'csv');
-    const curvePoints = {};
-    const curveKey = 0;
-    const xCoord = -1;
+let form0CurvePoints;
+let form1CurvePoints;
 
-    //read CSV file and store to 2D array or something
-    console.log(table.getRowCount());
+function loadPoints(table){
+    let formPoints =  [];
+    let curve = {id:0,points:[]};
+    let curvePoint = {x:0,y:0,z:0};
+    let curveKey = -1;
+    let xCoord = -1;
 
+    //store table/CSV to 2D array or something
+    // console.log(table.getRowCount());
     //each row
-    //if xCoord changed, add a new curveKey with empty array of points
-    //append latest point to curvePoints at the latest curveKey
+    for(let i = 0; i<table.getRowCount();i++){
+        let row = table.getRow(i);
 
+        curvePoint.x = row.get(0);
+        curvePoint.y = row.get(1);
+        curvePoint.z = row.get(2);
+        
+        //if xCoord changed, add a new curveKey and empty array of points
+        if(xCoord != curvePoint.x)
+        {
+            curveKey++;
+            curve.id = curveKey;
+            curve.points = [];
+            xCoord = curvePoint.x;
+            formPoints.push(curve);
+        }
 
+        //append latest point to formPoints at the latest curveKey
+        formPoints[curveKey].points.push(curvePoint);
 
-    return curvePoints;
+    }
+    
+    return formPoints;
 }
 
 function preload(){
@@ -27,7 +46,11 @@ function preload(){
 }
 
 function setup(){
-    console.log(form0.getRowCount());
+    // console.log(form0.getRowCount());
+    form0CurvePoints = loadPoints(form0);
+    console.log(form0CurvePoints);
+    form1CurvePoints = loadPoints(form1);
+    console.log(form1CurvePoints);
 }
 function main() {
 
